@@ -11,10 +11,12 @@ const monedas = ref([
 
 const criptomonedas = ref([])
 const error = ref('')
+
 const cotizar = reactive({
   moneda: '',
   criptomoneda: ''
 })
+const cotizacion = ref({})
 
 onMounted(() => {
   const url = 'https://min-api.cryptocompare.com/data/top/mktcapfull?limit=20&tsym=USD'
@@ -31,7 +33,17 @@ const cotizarCripto = () => {
   }
 
   error.value = ''
+  obtenerCotizacion()
+}
 
+const obtenerCotizacion = async () => {
+  const { moneda, criptomoneda } = cotizar
+  const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`
+
+  const respuesta = await fetch(url)
+  const data = await respuesta.json()
+
+  cotizacion.value = data.DISPLAY[criptomoneda][moneda]
 }
 </script>
 
@@ -79,6 +91,23 @@ const cotizarCripto = () => {
 
             <input type="submit" value="Cotizar" />
           </form>
+
+          <div class="contenedor-resultado">
+            <h2>Cotización</h2>
+            <div class="resultado">
+              <img
+                :src="'https://cryptocompare.com/' + cotizacion.IMAGEURL"
+                alt="imagen criptomoneda" />
+              <div>
+                <p>El precio es de: <span>{{ cotizacion.PRICE }}</span></p>
+                <p>Precio más alto del día: <span>{{ cotizacion.HIGHDAY }}</span></p>
+                <p>Precio más bajo del día: <span>{{ cotizacion.LOWDAY }}</span></p>
+                <p>Variación últimas 24 horas: <span>{{ cotizacion.CHANGEPCT24HOUR }}%</span></p>
+                <p>Última actualización: <span>{{ cotizacion.LASTUPDATE }}</span></p>
+              </div>
+
+            </div>
+          </div>
 
       </div>
   </div>
